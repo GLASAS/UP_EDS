@@ -1,0 +1,15 @@
+{
+  "name": "Subir Archivos Drive",
+  "short_name": "DriveUpload",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#4285F4",
+  "icons": [
+    {
+      "src": "AQUI_PEGA_LA_URL_RAW_DE_LOGO_APK.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
