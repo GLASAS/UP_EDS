@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Múltiples Archivos a Google Drive</title>
+    
+    <!-- Enlace al manifiesto para la instalación como App (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285F4">
+    
+    <!-- Icono para la pestaña y dispositivos móviles -->
+    <link rel="icon" type="image/jpeg" href="logo marca de agua APK.jpg">
+    <link rel="apple-touch-icon" href="logo marca de agua APK.jpg">
+
+    <!-- FontAwesome para los iconos de iOS, Android y PC -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,21 +25,37 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .upload-card {
             background: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .logo-container img {
+            max-width: 140px;
+            height: auto;
         }
         h2 {
+            margin-top: 0;
             margin-bottom: 20px;
             color: #333;
-            font-size: 22px;
+            font-size: 20px;
             text-align: center;
+        }
+        form {
+            width: 100%;
         }
         .form-group {
             margin-bottom: 20px;
@@ -37,6 +65,7 @@
             margin-bottom: 8px;
             color: #666;
             font-weight: bold;
+            font-size: 14px;
         }
         input[type="file"] {
             width: 100%;
@@ -65,6 +94,7 @@
             text-align: center;
             font-size: 14px;
             white-space: pre-line;
+            width: 100%;
         }
         .loading {
             color: #e67e22;
@@ -75,25 +105,61 @@
         .error {
             color: #c0392b;
         }
+        .footer-container {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        .compatibility {
+            margin-top: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 16px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
 <div class="upload-card">
+    
+    <!-- LOGO SUPERIOR -->
+    <div class="logo-container">
+        <img src="logo biomax.png" alt="Logo Biomax">
+    </div>
+
     <h2>Subir Archivos a Google Drive</h2>
+    
     <form id="uploadForm">
         <div class="form-group">
             <label for="fileInput">Selecciona uno o varios archivos (PDF, Imágenes, etc.):</label>
-            <!-- El atributo 'multiple' permite seleccionar varios archivos -->
             <input type="file" id="fileInput" accept=".pdf, image/*" multiple required>
         </div>
         <button type="submit" id="submitBtn">Subir Archivos</button>
     </form>
+    
     <div id="status"></div>
+
+    <!-- PIE DE PÁGINA -->
+    <div class="footer-container">
+        <p>&copy; 2026 Todos los derechos reservados. | <strong>Versión V 1.0</strong></p>
+        <div class="compatibility" title="Compatible con iOS, Android y PC/Web">
+            <span>Compatible con:</span>
+            <i class="fa-brands fa-apple" title="iOS"></i>
+            <i class="fa-brands fa-android" title="Android"></i>
+            <i class="fa-solid fa-desktop" title="PC / Escritorio"></i>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5NFPjE9Im6jgcSMa02YgTGJYM_BBdYH9lJFq8exm1hGAwyfW-rSkRqJ119zYqX8eYnQ/exec"; // Reemplaza con tu URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5NFPjE9Im6jgcSMa02YgTGJYM_BBdYH9lJFq8exm1hGAwyfW-rSkRqJ119zYqX8eYnQ/exec"; // Pega aquí tu URL de Apps Script
 
     document.getElementById('uploadForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -112,7 +178,6 @@
         submitBtn.disabled = true;
 
         try {
-            // Función auxiliar para convertir cada archivo a Base64 de forma asíncrona
             const readFileAsBase64 = (file) => {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -126,13 +191,11 @@
                 });
             };
 
-            // Convertir todos los archivos seleccionados en paralelo
             const filePromises = Array.from(fileInput.files).map(file => readFileAsBase64(file));
             const filesArray = await Promise.all(filePromises);
 
             const payload = { files: filesArray };
 
-            // Enviar la petición a Google Apps Script
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 mode: "no-cors",
