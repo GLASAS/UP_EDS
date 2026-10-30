@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Múltiples Archivos a Google Drive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .upload-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 22px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            background-color: #fafafa;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #357ae8;
+        }
+        #status {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            white-space: pre-line;
+        }
+        .loading {
+            color: #e67e22;
+        }
+        .success {
+            color: #27ae60;
+        }
+        .error {
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="upload-card">
+    <h2>Subir Archivos a Google Drive</h2>
+    <form id="uploadForm">
+        <div class="form-group">
+            <label for="fileInput">Selecciona uno o varios archivos (PDF, Imágenes, etc.):</label>
+            <!-- El atributo 'multiple' permite seleccionar varios archivos -->
+            <input type="file" id="fileInput" accept=".pdf, image/*" multiple required>
+        </div>
+        <button type="submit" id="submitBtn">Subir Archivos</button>
+    </form>
+    <div id="status"></div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby5NFPjE9Im6jgcSMa02YgTGJYM_BBdYH9lJFq8exm1hGAwyfW-rSkRqJ119zYqX8eYnQ/exec"; // Reemplaza con tu URL
+
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (fileInput.files.length === 0) {
+            alert("Por favor selecciona al menos un archivo.");
+            return;
+        }
+        
+        statusDiv.className = "loading";
+        statusDiv.innerText = `Subiendo ${fileInput.files.length} archivo(s), por favor espera...`;
+        submitBtn.disabled = true;
+
+        try {
+            // Función auxiliar para convertir cada archivo a Base64 de forma asíncrona
+            const readFileAsBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve({
+                        fileName: file.name,
+                        mimeType: file.type,
+                        fileData: reader.result.split(',')[1]
+                    });
+                    reader.onerror = error => reject(error);
+                });
+            };
+
+            // Convertir todos los archivos seleccionados en paralelo
+            const filePromises = Array.from(fileInput.files).map(file => readFileAsBase64(file));
+            const filesArray = await Promise.all(filePromises);
+
+            const payload = { files: filesArray };
+
+            // Enviar la petición a Google Apps Script
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            statusDiv.className = "success";
+            statusDiv.innerText = `¡${fileInput.files.length} archivo(s) subido(s) con éxito a Google Drive!`;
+            document.getElementById('uploadForm').reset();
+
+        } catch (error) {
+            console.error("Error:", error);
+            statusDiv.className = "error";
+            statusDiv.innerText = "Hubo un error al procesar los archivos.";
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
